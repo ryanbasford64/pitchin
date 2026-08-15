@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { db } from '@/lib/store';
 import { currentMember } from '@/lib/session';
 import { formatWhen, memberName, tasksForNeed } from '@/lib/derive';
 import { Card, Empty, Section, Tag } from '@/components/ui';
 import { VerificationRow, PublishForm } from '@/components/coordinator/ReportControls';
+import { freshData } from '@/app/coordinator/fresh';
 
 export default async function ReportPage({ params }: { params: Promise<{ needId: string }> }) {
   const { needId } = await params;
-  const data = db();
+  const data = freshData();
   const viewer = await currentMember();
   const need = data.needs.find((item) => item.id === needId);
 

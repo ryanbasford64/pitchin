@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { db } from '@/lib/store';
 import { currentMember } from '@/lib/session';
 import {
   capabilityGaps,
@@ -13,9 +12,10 @@ import type { Database, Member, Need } from '@/lib/types';
 import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
 import { DecompositionEditor } from '@/components/coordinator/DecompositionEditor';
 import { proposeTasks } from './propose';
+import { freshData } from './fresh';
 
 export default async function CoordinatorPage() {
-  const data = db();
+  const data = freshData();
   const viewer = await currentMember();
   const queue = intakeQueue(data);
   const snapshot = readiness(data);
