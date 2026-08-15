@@ -114,8 +114,9 @@ export default async function NeedPage({
                       </p>
                       {stillNeeded(task) ? (
                         <p className="mt-1 text-xs font-medium text-amber-800">
-                          Needs {stillNeeded(task)} more — this one doesn’t run
-                          until {task.quorum} people commit.
+                          {task.quorum > 1
+                            ? `Needs ${stillNeeded(task)} more — this one doesn’t run until ${task.quorum} people commit.`
+                            : 'Needs one person — nobody has this yet.'}
                         </p>
                       ) : (
                         <p className="mt-1 text-xs font-medium text-emerald-700">
