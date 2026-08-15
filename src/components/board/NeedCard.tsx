@@ -59,7 +59,7 @@ export function NeedCard({
           </p>
           <p className="mt-1 text-sm font-medium">
             {still
-              ? `needs ${still} more${shortestQuorum ? ` — this one doesn’t run until ${shortestQuorum} people commit` : ''}`
+              ? `needs ${still} more${shortestQuorum && shortestQuorum > 1 ? ` — this one doesn’t run until ${shortestQuorum} people commit` : ''}`
               : 'fully staffed'}
           </p>
           {matches.length ? (
