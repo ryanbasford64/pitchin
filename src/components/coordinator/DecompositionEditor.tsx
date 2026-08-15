@@ -7,6 +7,7 @@ import type { Need } from '@/lib/types';
 import type { TaskDraft } from '@/app/coordinator/propose';
 
 export function DecompositionEditor({ need, initial }: { need: Need; initial: TaskDraft[] }) {
+  const [open, setOpen] = useState(false);
   const [drafts, setDrafts] = useState(initial);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -19,6 +20,17 @@ export function DecompositionEditor({ need, initial }: { need: Need; initial: Ta
     });
     if (response.ok) router.refresh();
   });
+  if (!open) {
+    return (
+      <button
+        className="mt-4 rounded border border-stone-300 px-3 py-1 text-xs"
+        onClick={() => setOpen(true)}
+      >
+        decompose
+      </button>
+    );
+  }
+
   return (
     <div className="mt-4 border-t border-stone-200 pt-4">
       <div className="mb-3 flex items-center justify-between">
