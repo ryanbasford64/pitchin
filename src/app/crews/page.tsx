@@ -21,10 +21,11 @@ export default async function CrewsPage() {
         <div className="grid gap-4 lg:grid-cols-3">
           {data.crews.map((crew) => {
             const isMine = crewOf(data, currentMemberIdValue)?.id === crew.id;
-            const pitchCount = crew.memberIds.filter((memberId) => {
+            const activeMembers = crew.memberIds.filter((memberId) => {
               const current = member(data, memberId);
-              return current !== undefined && weeklyPitch(data, memberId) !== undefined && !current.paused;
-            }).length;
+              return current !== undefined && !current.paused;
+            });
+            const pitchCount = activeMembers.filter((memberId) => weeklyPitch(data, memberId) !== undefined).length;
             const lead = member(data, crew.leadId);
             return (
               <Card key={crew.id} className={isMine ? 'border-stone-500 ring-1 ring-stone-400' : ''}>
@@ -42,9 +43,10 @@ export default async function CrewsPage() {
                   </div>
                   <div className="rounded border border-stone-200 p-2">
                     <div className="text-xs text-stone-500">Good for pitch</div>
-                    <div className="font-semibold">{pitchCount} of {crew.memberIds.length}</div>
+                    <div className="font-semibold">{pitchCount} of {activeMembers.length}</div>
                   </div>
                 </div>
+                <p className="mt-2 text-xs text-stone-500">Paused members sit outside streak math.</p>
                 <ul className="mt-4 space-y-3">
                   {crew.memberIds.map((memberId) => {
                     const current = member(data, memberId);
@@ -76,6 +78,9 @@ export default async function CrewsPage() {
         <Card>
           <p className="mb-3 text-sm text-stone-600">
             Resolves this week: verified commitments become kept, unresolved past-due ones become no-shows, streaks advance or reset, and the week moves forward.
+          </p>
+          <p className="mb-3 text-sm text-stone-600">
+            Verification comes from the requester, so commitments the requester has not verified resolve as no-shows; that resets crew streaks and shrinks the ask.
           </p>
           <AdvanceWeekButton />
         </Card>

@@ -12,7 +12,7 @@ import {
 } from '@/lib/derive';
 import { currentMember } from '@/lib/session';
 import { db } from '@/lib/store';
-import { declinedThisWeek, partnersFor, pitchCandidate, taskIsBeforeNow } from '@/app/api/pitch/logic';
+import { declinedThisWeek, partnersFor, pitchCandidate, startsInFuture } from '@/app/api/pitch/logic';
 import { CancelPitchButton, PauseToggle, PitchOfferActions } from '@/components/pitch/PitchActions';
 
 export default async function PitchPage() {
@@ -25,6 +25,9 @@ export default async function PitchPage() {
   const heldTask = held ? task(data, held.taskId) : undefined;
   const heldNeed = heldTask ? need(data, heldTask.needId) : undefined;
   const candidateNeed = candidate ? need(data, candidate.needId) : undefined;
+  const heldPartners = heldTask ? partnersFor(data, heldTask, current.id) : [];
+  const candidatePartners = candidate ? partnersFor(data, candidate, current.id) : [];
+  const firstClaimantLine = "You're first on this one — nobody else has claimed it yet.";
 
   return (
     <>
@@ -69,12 +72,12 @@ export default async function PitchPage() {
               {held.status === 'kept' ? <Tag tone="good">kept</Tag> : held.status === 'no_show' ? <Tag tone="alert">no-show</Tag> : <Tag>committed</Tag>}
             </div>
             <p className="mt-3 text-sm">
-              You&apos;d be paired with {partnersFor(data, heldTask, current.id).join(', ') || 'yourself'}.
+              {heldPartners.length > 0 ? `You're paired with ${heldPartners.join(', ')}.` : firstClaimantLine}
             </p>
             <p className="mt-1 text-sm text-stone-600">
               Bring {heldTask.materiel.length > 0 ? heldTask.materiel.join(', ') : 'your usual readiness kit'}.
             </p>
-            {held.status === 'committed' && taskIsBeforeNow(heldTask) ? (
+            {held.status === 'committed' && startsInFuture(heldTask) ? (
               <div className="mt-4">
                 <p className="mb-2 text-xs text-stone-500">Cancelling before the start is free and does not count against you.</p>
                 <CancelPitchButton commitmentId={held.id} />
@@ -105,7 +108,9 @@ export default async function PitchPage() {
               ) : null}
               <div className="mt-4 space-y-2 text-sm">
                 <p>
-                  You&apos;d be paired with {partnersFor(data, candidate, current.id).join(', ') || 'a neighbor from the town'}.
+                  {candidatePartners.length > 0
+                    ? `You'd be paired with ${candidatePartners.join(', ')}.`
+                    : firstClaimantLine}
                 </p>
                 <p>
                   Bring {candidate.materiel.length > 0 ? candidate.materiel.join(', ') : 'what you already have'}.
@@ -124,7 +129,9 @@ export default async function PitchPage() {
             </Card>
           ) : (
             <Empty>
-              Nothing fits your capabilities and availability window this week. That is fine — passing is part of a sustainable cadence.
+              {declined.length > 0
+                ? 'You passed on an earlier fit this week. Passing is free and is not a mark against you. Nothing else fits your capabilities and availability window right now.'
+                : 'Nothing fits your capabilities and availability window this week. That is fine — passing is part of a sustainable cadence.'}
             </Empty>
           )}
         </Section>

@@ -9,14 +9,14 @@ import {
 } from '@/lib/derive';
 import type { Commitment, Crew, Database, Task } from '@/lib/types';
 
-const DAY_MS = 7 * 864e5;
+const WEEK_MS = 7 * 864e5;
 
 export function weekBounds(data: Database): [number, number] {
   const start = new Date(`${data.weekOf}T00:00:00.000Z`).getTime();
-  return [start, start + DAY_MS];
+  return [start, start + WEEK_MS];
 }
 
-export function taskIsBeforeNow(candidate: Task): boolean {
+export function startsInFuture(candidate: Task): boolean {
   return Date.now() < new Date(candidate.scheduledFor).getTime();
 }
 
@@ -39,7 +39,6 @@ export function pitchCandidate(data: Database, memberId: string): Task | null {
   if (!current) return null;
 
   const [weekStart, weekEnd] = weekBounds(data);
-  const earliest = Math.max(Date.now(), weekStart);
   const declined = new Set(declinedThisWeek(data, memberId).map((commitment) => commitment.taskId));
   const crew = crewOf(data, memberId);
 
@@ -49,7 +48,7 @@ export function pitchCandidate(data: Database, memberId: string): Task | null {
       const taskNeed = need(data, candidate.needId);
       if (
         candidate.status !== 'open' ||
-        scheduled <= earliest ||
+        scheduled < weekStart ||
         scheduled >= weekEnd ||
         candidate.claimedBy.includes(memberId) ||
         declined.has(candidate.id) ||
@@ -75,6 +74,7 @@ export function pitchCandidate(data: Database, memberId: string): Task | null {
           date.getUTCHours() < window.endHour,
       );
       const score =
+        (scheduled > Date.now() ? 1000 : 0) +
         capabilityOverlap * 10 +
         (fitsAvailability ? 5 : 0) +
         (!atQuorum(candidate) ? 3 : 0);
