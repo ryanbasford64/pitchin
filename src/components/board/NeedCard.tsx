@@ -19,6 +19,7 @@ export function NeedCard({
   const tasks = tasksForNeed(data, need.id);
   const openTasks = tasks.filter((task) => task.status === 'open');
   const still = openTasks.reduce((sum, task) => sum + stillNeeded(task), 0);
+  const shortTasks = openTasks.filter((task) => stillNeeded(task) > 0);
   const claimTask = taskForMember(data, need, memberId);
   const claimed = tasks.some((task) => task.claimedBy.includes(memberId));
   const matches = [
@@ -28,9 +29,7 @@ export function NeedCard({
         .filter((capability) => current?.capabilities.includes(capability)),
     ),
   ];
-  const shortestQuorum = openTasks
-    .filter((task) => stillNeeded(task) > 0)
-    .sort((a, b) => a.quorum - b.quorum)[0]?.quorum;
+  const quorum = shortTasks[0]?.quorum;
 
   return (
     <Card>
@@ -58,9 +57,13 @@ export function NeedCard({
             {tasks.map((task) => task.title).join(' · ')}
           </p>
           <p className="mt-1 text-sm font-medium">
-            {still
-              ? `needs ${still} more${shortestQuorum && shortestQuorum > 1 ? ` — this one doesn’t run until ${shortestQuorum} people commit` : ''}`
-              : 'fully staffed'}
+            {shortTasks.length === 0
+              ? 'fully staffed'
+              : shortTasks.length === 1
+                ? quorum === 1
+                  ? 'needs one person — nobody has this yet'
+                  : `needs ${still} more — this one doesn’t run until ${quorum} people commit`
+                : `needs ${still} more across ${shortTasks.length} tasks — none of them run below quorum`}
           </p>
           {matches.length ? (
             <p className="mt-1 text-xs text-stone-500">
