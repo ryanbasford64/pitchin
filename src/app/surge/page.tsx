@@ -1,7 +1,10 @@
 import { ALL_QUALS, formatRate, label, showRate } from '@/lib/derive';
 import { db } from '@/lib/store';
+import type { Capability } from '@/lib/types';
 import { Card, Section, Tag } from '@/components/ui';
 import { DeclareSurgeForm, StandDownButton, SurgeResponseButtons } from '@/components/readiness/SurgeControls';
+
+const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
 export default function SurgePage() {
   const data = db();
@@ -21,9 +24,9 @@ export default function SurgePage() {
   const confirmed = rows.filter((row) => row.response === 'yes');
   const confirmedQuals = new Set(confirmed.flatMap((row) => row.matchingQuals));
   const missingQuals = active?.quals.filter((qual) => !confirmedQuals.has(qual)) ?? [];
-  const equipment = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'].map((capability) => ({
+  const equipment = HARD_CAPABILITIES.map((capability) => ({
     capability,
-    count: confirmed.filter((row) => row.member.capabilities.includes(capability as typeof row.member.capabilities[number])).length,
+    count: confirmed.filter((row) => row.member.capabilities.includes(capability)).length,
   })).filter((item) => item.count > 0);
   const pending = rows.filter((row) => row.response === 'pending').length;
   const declined = rows.filter((row) => row.response === 'no').length;

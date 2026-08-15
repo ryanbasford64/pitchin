@@ -1,9 +1,12 @@
 import Link from 'next/link';
-import { capabilityGaps, formatRate, label, readiness, showRate } from '@/lib/derive';
+import { capabilityGaps, formatRate, label, readiness, showRate, stillNeeded, tasksForNeed } from '@/lib/derive';
 import { db } from '@/lib/store';
+import type { Capability } from '@/lib/types';
 import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
 import { ResetDemo } from '@/components/readiness/ResetDemo';
 import { TownMap } from '@/components/readiness/TownMap';
+
+const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
 function inventory(counts: Record<string, number>) {
   return Object.entries(counts);
@@ -15,6 +18,29 @@ export default function ReadinessPage() {
   const publicNeeds = data.needs.filter((need) => (need.status === 'open' || need.status === 'staffed') && need.visibility === 'neighborhood');
   const publicNeedIds = new Set(publicNeeds.map((need) => need.id));
   const gaps = capabilityGaps(data).filter(({ task }) => publicNeedIds.has(task.needId));
+  const activeMembers = data.members.filter((member) => !member.paused);
+  const mapNeeds = publicNeeds.map((need) => ({
+    id: need.id,
+    title: need.title,
+    urgency: need.urgency,
+    street: need.street,
+    neighborhood: need.neighborhood,
+    lat: need.lat,
+    lng: need.lng,
+    stillNeeded: tasksForNeed(data, need.id).reduce((sum, task) => sum + stillNeeded(task), 0),
+  }));
+  const mapNeighborhoods = [...new Set(publicNeeds.map((need) => need.neighborhood))].map((name) => {
+    const neighborhoodMembers = activeMembers.filter((member) => member.neighborhood === name);
+    return {
+      name,
+      activeMemberCount: neighborhoodMembers.length,
+      distinctCapabilityCount: new Set(neighborhoodMembers.flatMap((member) => member.capabilities)).size,
+    };
+  });
+  const mapEquipment = HARD_CAPABILITIES.map((capability) => ({
+    capability,
+    count: activeMembers.filter((member) => member.capabilities.includes(capability)).length,
+  })).filter((item) => item.count > 0);
 
   return (
     <>
@@ -23,7 +49,11 @@ export default function ReadinessPage() {
           <h1 className="text-2xl font-semibold tracking-tight">What Hamilton can field</h1>
           <p className="mt-1 max-w-2xl text-sm text-stone-600">A plain-language readiness picture for this week: people, equipment, and the gaps that keep a job from launching.</p>
         </div>
-        <ResetDemo />
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/print" className="text-xs font-medium underline">Weekly paper board</Link>
+          <Link href="/surge" className="text-xs font-medium underline">Declare a surge</Link>
+          <ResetDemo />
+        </div>
       </div>
 
       <Section title="Headline stats">
@@ -91,7 +121,14 @@ export default function ReadinessPage() {
       </Section>
 
       <Section title="Supply map" hint="Needs are mapped; member addresses are intentionally not.">
-        <TownMap needs={publicNeeds} tasks={data.tasks} members={data.members} />
+        <TownMap
+          needs={mapNeeds}
+          supply={{
+            neighborhoods: mapNeighborhoods,
+            activeMemberCount: activeMembers.length,
+            hardEquipment: mapEquipment,
+          }}
+        />
       </Section>
     </>
   );
