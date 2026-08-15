@@ -5,10 +5,11 @@ import { useState } from 'react';
 import type { Capability, NeedUrgency } from '@/lib/types';
 import { label } from '@/lib/derive';
 
-const MIN_LAT = 46.23;
-const MAX_LAT = 46.32;
-const MIN_LNG = -114.18;
-const MAX_LNG = -114.1;
+const VIEWBOX_WIDTH = 800;
+const VIEWBOX_HEIGHT = 500;
+const MIN_LAT_SPAN = 0.015;
+const MIN_LNG_SPAN = 0.015;
+const PROPORTIONAL_PADDING = 0.15;
 const urgencyColors: Record<NeedUrgency, string> = {
   routine: '#78716c',
   soon: '#d97706',
@@ -39,21 +40,58 @@ type TownMapSupply = {
   hardEquipment: { capability: Capability; count: number }[];
 };
 
-function point(need: TownMapNeed) {
+type MapBounds = {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+};
+
+function fitBounds(needs: TownMapNeed[]): MapBounds {
+  if (needs.length === 0) {
+    return {
+      minLat: -MIN_LAT_SPAN / 2,
+      maxLat: MIN_LAT_SPAN / 2,
+      minLng: -MIN_LNG_SPAN / 2,
+      maxLng: MIN_LNG_SPAN / 2,
+    };
+  }
+  const lats = needs.map((need) => need.lat);
+  const lngs = needs.map((need) => need.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latCenter = (minLat + maxLat) / 2;
+  const lngCenter = (minLng + maxLng) / 2;
+  const latSpan = Math.max(maxLat - minLat, MIN_LAT_SPAN);
+  const lngSpan = Math.max(maxLng - minLng, MIN_LNG_SPAN);
+  const paddedLatSpan = latSpan * (1 + PROPORTIONAL_PADDING * 2);
+  const paddedLngSpan = lngSpan * (1 + PROPORTIONAL_PADDING * 2);
   return {
-    x: ((need.lng - MIN_LNG) / (MAX_LNG - MIN_LNG)) * 800,
-    y: ((MAX_LAT - need.lat) / (MAX_LAT - MIN_LAT)) * 500,
+    minLat: latCenter - paddedLatSpan / 2,
+    maxLat: latCenter + paddedLatSpan / 2,
+    minLng: lngCenter - paddedLngSpan / 2,
+    maxLng: lngCenter + paddedLngSpan / 2,
+  };
+}
+
+function point(need: TownMapNeed, bounds: MapBounds) {
+  return {
+    x: ((need.lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * VIEWBOX_WIDTH,
+    y: ((bounds.maxLat - need.lat) / (bounds.maxLat - bounds.minLat)) * VIEWBOX_HEIGHT,
   };
 }
 
 export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownMapSupply }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const bounds = fitBounds(needs);
   const neighborhoodSupply = supply.neighborhoods.map((area) => {
     const areaNeeds = needs.filter((need) => need.neighborhood === area.name);
     const coordinates = areaNeeds.reduce(
       (sum, need) => {
-        const location = point(need);
+        const location = point(need, bounds);
         return { x: sum.x + location.x, y: sum.y + location.y };
       },
       { x: 0, y: 0 },
@@ -102,7 +140,7 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
             );
           })}
           {needs.map((need) => {
-            const location = point(need);
+            const location = point(need, bounds);
             const radius = 7 + Math.min(need.stillNeeded, 8) * 1.5;
             return (
               <circle
