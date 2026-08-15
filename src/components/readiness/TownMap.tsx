@@ -6,7 +6,7 @@ import type { Capability, NeedUrgency } from '@/lib/types';
 import { label } from '@/lib/derive';
 
 const VIEWBOX_WIDTH = 800;
-const VIEWBOX_HEIGHT = 500;
+const VIEWBOX_HEIGHT = 360;
 const MIN_LAT_SPAN = 0.015;
 const MIN_LNG_SPAN = 0.015;
 const PROPORTIONAL_PADDING = 0.15;
@@ -83,6 +83,10 @@ function point(need: TownMapNeed, bounds: MapBounds) {
   };
 }
 
+function shortTitle(title: string) {
+  return title.length > 28 ? `${title.slice(0, 27)}…` : title;
+}
+
 export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownMapSupply }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -108,10 +112,10 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
   return (
     <div className="space-y-3">
       <div className="overflow-hidden rounded-lg border border-stone-200 bg-[#f4f1ea]">
-        <svg viewBox="0 0 800 500" role="img" aria-label="Map of open neighborhood needs" className="block h-auto w-full">
-          <rect width="800" height="500" fill="#f4f1ea" />
-          <path d="M0 150 C170 115 275 175 420 145 S650 120 800 150" fill="none" stroke="#d6d3d1" strokeWidth="2" />
-          <path d="M0 375 C180 345 300 405 470 360 S650 350 800 380" fill="none" stroke="#e7e5e4" strokeWidth="2" />
+        <svg viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} role="img" aria-label="Map of open neighborhood needs" className="block h-auto max-h-[360px] w-full">
+          <rect width={VIEWBOX_WIDTH} height={VIEWBOX_HEIGHT} fill="#f4f1ea" />
+          <path d="M0 100 C170 75 275 120 420 95 S650 80 800 105" fill="none" stroke="#d6d3d1" strokeWidth="2" />
+          <path d="M0 270 C180 245 300 290 470 255 S650 250 800 275" fill="none" stroke="#e7e5e4" strokeWidth="2" />
           {neighborhoodSupply.map((area) => {
             return (
               <ellipse
@@ -121,7 +125,10 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
                 rx="42"
                 ry="28"
                 fill={area.activeMemberCount < 2 ? '#fecdd3' : '#d6d3d1'}
-                opacity="0.22"
+                opacity="0.28"
+                stroke={area.activeMemberCount < 2 ? '#be123c' : '#a8a29e'}
+                strokeDasharray="4 3"
+                strokeWidth="1.5"
               />
             );
           })}
@@ -157,6 +164,34 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
                 onMouseEnter={() => setHoveredId(need.id)}
                 onMouseLeave={() => setHoveredId(null)}
               />
+            );
+          })}
+          {needs.map((need) => {
+            const location = point(need, bounds);
+            const labelOnLeft = location.x > VIEWBOX_WIDTH * 0.62;
+            const labelX = labelOnLeft
+              ? Math.max(location.x - 24, 8)
+              : Math.min(location.x + 24, VIEWBOX_WIDTH - 8);
+            const labelY = Math.min(Math.max(location.y, 22), VIEWBOX_HEIGHT - 18);
+            return (
+              <g key={`label-${need.id}`} pointerEvents="none">
+                <text
+                  x={labelX}
+                  y={labelY - 3}
+                  textAnchor={labelOnLeft ? 'end' : 'start'}
+                  className="fill-stone-800 text-[11px] font-semibold"
+                >
+                  {shortTitle(need.title)}
+                </text>
+                <text
+                  x={labelX}
+                  y={labelY + 11}
+                  textAnchor={labelOnLeft ? 'end' : 'start'}
+                  className="fill-stone-600 text-[9px]"
+                >
+                  {need.stillNeeded} still needed
+                </text>
+              </g>
             );
           })}
         </svg>
