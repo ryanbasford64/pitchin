@@ -1,13 +1,15 @@
 import { ALL_QUALS, formatRate, label, showRate } from '@/lib/derive';
-import { db } from '@/lib/store';
 import type { Capability } from '@/lib/types';
 import { Card, Section, Tag } from '@/components/ui';
+import { currentData } from '@/components/readiness/currentData';
 import { DeclareSurgeForm, StandDownButton, SurgeResponseButtons } from '@/components/readiness/SurgeControls';
+
+export const dynamic = 'force-dynamic';
 
 const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
 export default function SurgePage() {
-  const data = db();
+  const data = currentData();
   const active = data.surges.find((surge) => surge.standDownAt === null);
   const past = data.surges.filter((surge) => surge.standDownAt !== null).slice().reverse().slice(0, 5);
   const rows = active

@@ -1,6 +1,7 @@
 import { currentMemberId } from '@/lib/session';
 import { ALL_QUALS } from '@/lib/derive';
 import { db, id, write } from '@/lib/store';
+import { revalidatePath } from 'next/cache';
 import type { Qual, Surge } from '@/lib/types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       data.surges.push(next);
       return next;
     });
+    revalidatePath('/surge');
     return Response.json({ surge });
   }
 
@@ -74,6 +76,7 @@ export async function POST(request: Request) {
       return found;
     });
     if (!surge) return error('That roll-call row is not available.', 404);
+    revalidatePath('/surge');
     return Response.json({ surge });
   }
 
@@ -86,6 +89,7 @@ export async function POST(request: Request) {
       return found;
     });
     if (!surge) return error('Surge not found.', 404);
+    revalidatePath('/surge');
     return Response.json({ surge });
   }
 

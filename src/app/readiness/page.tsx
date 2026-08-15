@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { capabilityGaps, formatRate, label, readiness, showRate, stillNeeded, tasksForNeed } from '@/lib/derive';
-import { db } from '@/lib/store';
 import type { Capability } from '@/lib/types';
 import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
+import { currentData } from '@/components/readiness/currentData';
 import { ResetDemo } from '@/components/readiness/ResetDemo';
 import { TownMap } from '@/components/readiness/TownMap';
+
+export const dynamic = 'force-dynamic';
 
 const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
@@ -13,7 +15,7 @@ function inventory(counts: Record<string, number>) {
 }
 
 export default function ReadinessPage() {
-  const data = db();
+  const data = currentData();
   const snapshot = readiness(data);
   const publicNeeds = data.needs.filter((need) => (need.status === 'open' || need.status === 'staffed') && need.visibility === 'neighborhood');
   const publicNeedIds = new Set(publicNeeds.map((need) => need.id));

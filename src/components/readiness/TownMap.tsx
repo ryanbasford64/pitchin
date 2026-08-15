@@ -80,8 +80,8 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
                 key={`shade-${area.name}`}
                 cx={area.x}
                 cy={area.y}
-                rx="92"
-                ry="58"
+                rx="42"
+                ry="28"
                 fill={area.activeMemberCount < 2 ? '#fecdd3' : '#d6d3d1'}
                 opacity="0.22"
               />
@@ -89,21 +89,16 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
           })}
           {neighborhoodSupply.map((area) => {
             return (
-              <g key={`area-${area.name}`} pointerEvents="none">
-                <text x={area.x} y={area.y - 22} textAnchor="middle" className="fill-stone-700 text-[12px] font-semibold">
-                  {area.name}
-                </text>
-                <text x={area.x} y={area.y - 7} textAnchor="middle" className="fill-stone-600 text-[10px]">
-                  {area.activeMemberCount > 0
-                    ? `${area.activeMemberCount} active · ${area.distinctCapabilityCount} capabilities`
-                    : 'no members on record'}
-                </text>
-                {area.activeMemberCount === 0 ? (
-                  <text x={area.x} y={area.y + 8} textAnchor="middle" className="fill-rose-800 text-[9px]">
-                    capability is registered town-wide only
-                  </text>
-                ) : null}
-              </g>
+              <circle
+                key={`area-${area.name}`}
+                cx={area.x}
+                cy={area.y}
+                r="4"
+                fill={area.activeMemberCount < 2 ? '#be123c' : '#78716c'}
+                stroke="#fff"
+                strokeWidth="1.5"
+                pointerEvents="none"
+              />
             );
           })}
           {needs.map((need) => {
@@ -134,6 +129,20 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
           hard equipment:{' '}
           {supply.hardEquipment.length > 0 ? supply.hardEquipment.map((item) => `${item.count} ${label(item.capability)}`).join(' · ') : 'none on record'}
         </span>
+      </div>
+      <div className="grid gap-2 text-xs text-stone-600 sm:grid-cols-2">
+        {neighborhoodSupply.map((area) => (
+          <div key={`legend-${area.name}`} className="flex items-start gap-2 rounded border border-stone-200 bg-white px-2.5 py-2">
+            <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${area.activeMemberCount < 2 ? 'bg-rose-700' : 'bg-stone-500'}`} />
+            <span>
+              <strong className="text-stone-800">{area.name}</strong>
+              {' — '}
+              {area.activeMemberCount > 0
+                ? `${area.activeMemberCount} active members · ${area.distinctCapabilityCount} distinct capabilities`
+                : `no members on record in ${area.name} — capability is registered town-wide only`}
+            </span>
+          </div>
+        ))}
       </div>
       {focusedNeed ? (
         <div className="rounded-lg border border-stone-300 bg-white p-3 text-sm shadow-sm">
