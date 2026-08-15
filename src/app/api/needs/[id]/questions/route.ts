@@ -28,7 +28,7 @@ export async function POST(
     if (!body.question?.trim()) return { error: 'Question cannot be empty.', status: 400 as const };
     need.questions ??= [];
     need.questions.push({
-      id: id('cmt'),
+      id: id('qst'),
       needId,
       askedBy: memberId,
       question: body.question.trim(),
