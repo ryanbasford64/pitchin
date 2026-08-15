@@ -6,7 +6,7 @@ import { approximateStreet } from '@/components/board/helpers';
 import { Card, Empty, Section, Tag } from '@/components/ui';
 import { formatWhen, member, stillNeeded, tasksForNeed } from '@/lib/derive';
 import { currentMemberId } from '@/lib/session';
-import { db } from '@/lib/store';
+import { dbFresh } from '@/lib/store';
 
 export default async function NeedPage({
   params,
@@ -17,7 +17,7 @@ export default async function NeedPage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const data = db();
+  const data = dbFresh();
   const need = data.needs.find((item) => item.id === id);
 
   if (!need) notFound();

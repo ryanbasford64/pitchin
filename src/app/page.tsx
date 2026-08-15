@@ -11,10 +11,10 @@ import {
   weeklyPitch,
 } from '@/lib/derive';
 import { currentMemberId } from '@/lib/session';
-import { db } from '@/lib/store';
+import { dbFresh } from '@/lib/store';
 
 export default async function BoardPage() {
-  const data = db();
+  const data = dbFresh();
   const memberId = await currentMemberId();
   const current = member(data, memberId);
   const pitch = weeklyPitch(data, memberId);

@@ -51,3 +51,15 @@ export function reseed(): Database {
 export function id(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
+
+let freshMtimeMs: number | null = null;
+
+export function dbFresh(): Database {
+  if (!fs.existsSync(DATA_FILE)) return load();
+  const mtimeMs = fs.statSync(DATA_FILE).mtimeMs;
+  if (freshMtimeMs !== mtimeMs) {
+    cache = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as Database;
+    freshMtimeMs = mtimeMs;
+  }
+  return load();
+}

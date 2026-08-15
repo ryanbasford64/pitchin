@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { NewNeedForm } from '@/components/board/NewNeedForm';
-import { db } from '@/lib/store';
+import { dbFresh } from '@/lib/store';
 
 export default function NewNeedPage() {
-  const members = db().members.map(({ id, name }) => ({ id, name }));
+  const members = dbFresh().members.map(({ id, name }) => ({ id, name }));
 
   return (
     <div className="max-w-2xl">
