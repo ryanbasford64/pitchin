@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { currentMemberId } from '@/lib/session';
-import { id, write } from '@/lib/store';
+import { dbFresh, id, write } from '@/lib/store';
 
 export async function POST(
   request: Request,
@@ -9,6 +9,7 @@ export async function POST(
   const { id: needId } = await context.params;
   const body = (await request.json()) as { question?: string; questionId?: string; answer?: string };
   const memberId = await currentMemberId();
+  dbFresh();
   const result = write((data) => {
     const need = data.needs.find((item) => item.id === needId);
     if (!need) return { error: 'unknown need', status: 400 as const };

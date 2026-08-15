@@ -55,7 +55,11 @@ export function id(prefix: string): string {
 let freshMtimeMs: number | null = null;
 
 export function dbFresh(): Database {
-  if (!fs.existsSync(DATA_FILE)) return load();
+  if (!fs.existsSync(DATA_FILE)) {
+    cache = null;
+    freshMtimeMs = null;
+    return load();
+  }
   const mtimeMs = fs.statSync(DATA_FILE).mtimeMs;
   if (freshMtimeMs !== mtimeMs) {
     cache = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as Database;

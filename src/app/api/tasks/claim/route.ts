@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { currentMemberId } from '@/lib/session';
-import { id, write } from '@/lib/store';
+import { dbFresh, id, write } from '@/lib/store';
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { taskId?: string };
   const memberId = await currentMemberId();
+  dbFresh();
   const result = write((data) => {
     const task = data.tasks.find((item) => item.id === body.taskId);
     if (!task) return { error: 'unknown task', status: 400 as const };

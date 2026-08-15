@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { currentMemberId } from '@/lib/session';
-import { id, write } from '@/lib/store';
+import { dbFresh, id, write } from '@/lib/store';
 import type { NeedUrgency, NeedVisibility } from '@/lib/types';
 
 export async function POST(request: Request) {
@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     publishConsent?: boolean;
   };
   const memberId = await currentMemberId();
+  dbFresh();
   const result = write((data) => {
     const current = data.members.find((member) => member.id === memberId);
     if (!current || !body.rawText?.trim()) return { error: 'Please describe what is needed.', status: 400 as const };
