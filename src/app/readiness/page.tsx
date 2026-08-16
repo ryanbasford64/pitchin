@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { capabilityGaps, formatRate, label, readiness, showRate, stillNeeded, tasksForNeed } from '@/lib/derive';
+import { dbFresh } from '@/lib/store';
 import type { Capability } from '@/lib/types';
 import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
-import { currentData } from '@/components/readiness/currentData';
 import { ResetDemo } from '@/components/readiness/ResetDemo';
 import { TownMap } from '@/components/readiness/TownMap';
 
@@ -15,7 +15,7 @@ function inventory(counts: Record<string, number>) {
 }
 
 export default function ReadinessPage() {
-  const data = currentData();
+  const data = dbFresh();
   const snapshot = readiness(data);
   const publicNeeds = data.needs.filter((need) => (need.status === 'open' || need.status === 'staffed') && need.visibility === 'neighborhood');
   const publicNeedIds = new Set(publicNeeds.map((need) => need.id));

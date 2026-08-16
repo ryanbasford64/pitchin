@@ -1,11 +1,11 @@
 import { formatRate, formatWhen, label, readiness, showRate, tasksForNeed } from '@/lib/derive';
-import { currentData } from '@/components/readiness/currentData';
+import { dbFresh } from '@/lib/store';
 import { PrintButton } from '@/components/readiness/PrintButton';
 
 export const dynamic = 'force-dynamic';
 
 export default function PrintPage() {
-  const data = currentData();
+  const data = dbFresh();
   const needs = data.needs.filter((need) => (need.status === 'open' || need.status === 'staffed') && need.visibility === 'neighborhood');
   const coordinator = data.members.find((member) => member.isCoordinator);
   const referenceTime = new Date(`${data.weekOf}T00:00:00.000Z`).getTime();

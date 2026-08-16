@@ -115,6 +115,18 @@ export interface Need {
   taskIds: Uuid[];
   /** Requester consent to name them in the public after-action report. */
   publishConsent: boolean;
+  questions?: LogisticsQuestion[];
+}
+
+export interface LogisticsQuestion {
+  id: Uuid;
+  needId: Uuid;
+  askedBy: Uuid;
+  question: string;
+  askedAt: string;
+  answer: string | null;
+  answeredBy: Uuid | null;
+  answeredAt: string | null;
 }
 
 /** A promise with a name on it. The unit the reward system is built on. */

@@ -6,7 +6,10 @@ import type { Database } from '@/lib/types';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'pitchin.json');
 
-export function currentData(): Database {
-  if (!fs.existsSync(DATA_FILE)) return db();
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as Database;
+export function freshData(): Database {
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as Database;
+  } catch {
+    return db();
+  }
 }
