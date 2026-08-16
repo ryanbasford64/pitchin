@@ -8,6 +8,7 @@ const links = [
   { href: '/pitch', text: 'My pitch' },
   { href: '/crews', text: 'Crews' },
   { href: '/readiness', text: 'Readiness' },
+  { href: '/reports', text: 'The record' },
   { href: '/coordinator', text: 'Coordinator' },
 ];
 

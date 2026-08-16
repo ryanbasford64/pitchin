@@ -7,6 +7,7 @@ import type {
   Database,
   Member,
   Need,
+  NeedResolution,
   Qual,
   ReadinessSnapshot,
   ShowRate,
@@ -95,6 +96,53 @@ export function askMinutes(m: Member): number {
   return 20;
 }
 
+export const RESOLUTION_LABEL: Record<NeedResolution, string> = {
+  solved: 'the problem was handled',
+  partly: 'partly handled',
+  not_solved: 'not handled',
+};
+
+export function resolutionTone(resolution: NeedResolution): 'good' | 'warn' | 'alert' {
+  if (resolution === 'solved') return 'good';
+  return resolution === 'partly' ? 'warn' : 'alert';
+}
+
+/** Closed either way: the town staffed it, or the town failed to field it. */
+export function closedNeeds(data: Database): Need[] {
+  return data.needs.filter((n) => n.status === 'done' || n.status === 'unmet');
+}
+
+export function personMinutes(data: Database, needId: string): number {
+  return data.commitments
+    .filter((c) => c.needId === needId && c.status === 'kept')
+    .reduce((sum, c) => sum + (task(data, c.taskId)?.minutes ?? 0), 0);
+}
+
+/**
+ * Why the town did not field a need, stated as a capacity fact. Never a helper's name:
+ * an unmet need is a failure of the town, not of a neighbor who declined.
+ */
+export function unmetReasons(data: Database, needId: string): { title: string; reason: string }[] {
+  const active = data.members.filter((m) => !m.paused);
+  return tasksForNeed(data, needId)
+    .filter((t) => t.status === 'unmet' || !atQuorum(t))
+    .map((t) => ({ title: t.title, reason: reasonFor(t) }));
+
+  function reasonFor(t: Task): string {
+    const missing = [
+      ...t.capabilities.filter((cap) => !active.some((m) => m.capabilities.includes(cap))),
+      ...t.quals.filter((q) => !active.some((m) => m.quals.some((g) => g.qual === q))),
+    ].map(label);
+    if (missing.length) return `nobody on the registry can field ${missing.join(' or ')}`;
+    const kept = data.commitments.filter((c) => c.taskId === t.id && c.status === 'kept').length;
+    if (t.claimedBy.length === 0) {
+      return `nobody claimed it; ${t.quorum} ${t.quorum === 1 ? 'was' : 'were'} needed`;
+    }
+    if (!atQuorum(t)) return `below quorum — ${t.quorum} needed, ${t.claimedBy.length} claimed`;
+    return `${t.claimedBy.length} claimed it, ${kept} showed, quorum was ${t.quorum}`;
+  }
+}
+
 export function openNeeds(data: Database): Need[] {
   return data.needs.filter((n) => n.status === 'open' || n.status === 'staffed');
 }
@@ -138,9 +186,17 @@ export function readiness(data: Database): ReadinessSnapshot {
   ];
 
   const monthAgo = Date.now() - 30 * 864e5;
-  const needsMetThisMonth = data.needs.filter(
-    (n) => n.status === 'done' && new Date(n.createdAt).getTime() >= monthAgo,
+  const thisMonth = data.needs.filter((n) => new Date(n.createdAt).getTime() >= monthAgo);
+  const needsMetThisMonth = thisMonth.filter((n) => n.status === 'done').length;
+  const closedThisMonth = thisMonth.filter((n) => n.status === 'done' || n.status === 'unmet');
+  const needsResolvedThisMonth = closedThisMonth.filter(
+    (n) => n.resolution?.resolution === 'solved',
   ).length;
+  const needsPartlyResolvedThisMonth = closedThisMonth.filter(
+    (n) => n.resolution?.resolution === 'partly',
+  ).length;
+  const needsUnmetThisMonth = thisMonth.filter((n) => n.status === 'unmet').length;
+  const needsAwaitingResolution = closedThisMonth.filter((n) => !n.resolution).length;
 
   const made = data.members.reduce((sum, m) => sum + m.commitmentsMade, 0);
   const kept = data.members.reduce((sum, m) => sum + m.commitmentsKept, 0);
@@ -152,6 +208,10 @@ export function readiness(data: Database): ReadinessSnapshot {
     qualCounts,
     gaps,
     needsMetThisMonth,
+    needsResolvedThisMonth,
+    needsPartlyResolvedThisMonth,
+    needsUnmetThisMonth,
+    needsAwaitingResolution,
     needsOpen: openNeeds(data).length,
     townShowRate: made === 0 ? null : kept / made,
   };

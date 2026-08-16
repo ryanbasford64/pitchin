@@ -1,16 +1,22 @@
 import Link from 'next/link';
 import { currentMember } from '@/lib/session';
 import {
+  RESOLUTION_LABEL,
   capabilityGaps,
   formatRate,
+  formatWhen,
   label,
   memberName,
   readiness,
+  resolutionTone,
   showRate,
+  unmetReasons,
 } from '@/lib/derive';
+import { overdueNeeds } from '@/lib/sweep';
 import type { Database, Member, Need } from '@/lib/types';
 import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
 import { DecompositionEditor } from '@/components/coordinator/DecompositionEditor';
+import { SweepButton } from '@/components/coordinator/SweepButton';
 import { proposeTasks } from './propose';
 import { freshData } from './fresh';
 
@@ -24,6 +30,8 @@ export default async function CoordinatorPage() {
   const coldCrews = coldCrewsFor(data);
   const singleQuals = singlePointQuals(data);
   const records = recordNeeds(data);
+  const overdue = overdueNeeds(data);
+  const unmet = data.needs.filter((need) => need.status === 'unmet');
 
   return (
     <>
@@ -77,6 +85,47 @@ export default async function CoordinatorPage() {
       </Section>
 
       <Section
+        title="Overdue and unmet"
+        hint="A need past its deadline with nothing at quorum is not open. It is unmet, and the town should see it."
+        action={<Link href="/reports" className="text-xs font-medium underline">The record</Link>}
+      >
+        <div className="space-y-3">
+          {overdue.length === 0 ? (
+            <Empty>Nothing is past its deadline without a staffed task.</Empty>
+          ) : (
+            <>
+              {overdue.map((need) => (
+                <Card key={need.id}>
+                  <div className="font-medium">{need.title}</div>
+                  <div className="mt-1 text-xs text-stone-500">
+                    needed by {need.neededBy ? formatWhen(need.neededBy) : 'when possible'} ·{' '}
+                    {need.neighborhood}
+                  </div>
+                  <ul className="mt-2 space-y-1 text-sm text-stone-700">
+                    {unmetReasons(data, need.id).map((item) => (
+                      <li key={item.title}>
+                        <strong>{item.title}</strong> — {item.reason}.
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              ))}
+              {viewer.isCoordinator ? (
+                <SweepButton count={overdue.length} />
+              ) : (
+                <p className="text-xs text-stone-500">A coordinator closes these out.</p>
+              )}
+            </>
+          )}
+          {unmet.length > 0 ? (
+            <p className="text-xs text-stone-500">
+              {unmet.length} need{unmet.length === 1 ? '' : 's'} already on the unmet ledger.
+            </p>
+          ) : null}
+        </div>
+      </Section>
+
+      <Section
         title="Records"
         hint="Published work and needs that are ready for verification or review."
       >
@@ -95,6 +144,15 @@ export default async function CoordinatorPage() {
                   {data.reports.some((report) => report.needId === need.id)
                     ? 'published after-action report'
                     : 'awaiting verification or record review'}
+                </div>
+                <div className="mt-2">
+                  {need.resolution ? (
+                    <Tag tone={resolutionTone(need.resolution.resolution)}>
+                      {RESOLUTION_LABEL[need.resolution.resolution]}
+                    </Tag>
+                  ) : need.status === 'done' || need.status === 'unmet' ? (
+                    <Tag tone="warn">ask the requester whether it worked</Tag>
+                  ) : null}
                 </div>
               </Link>
             ))}

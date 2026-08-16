@@ -1,9 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { currentMember } from '@/lib/session';
-import { formatWhen, memberName, tasksForNeed } from '@/lib/derive';
+import {
+  RESOLUTION_LABEL,
+  formatWhen,
+  memberName,
+  resolutionTone,
+  tasksForNeed,
+  unmetReasons,
+} from '@/lib/derive';
 import { Card, Empty, Section, Tag } from '@/components/ui';
 import { VerificationRow, PublishForm } from '@/components/coordinator/ReportControls';
+import { ResolutionForm } from '@/components/reports/ResolutionForm';
 import { freshData } from '@/app/coordinator/fresh';
 
 export default async function ReportPage({ params }: { params: Promise<{ needId: string }> }) {
@@ -28,6 +36,10 @@ export default async function ReportPage({ params }: { params: Promise<{ needId:
   const report = data.reports.find((item) => item.needId === need.id);
   const canVerify = viewer.id === need.requesterId || viewer.isCoordinator;
   const allDone = tasks.length > 0 && tasks.every((task) => task.status === 'done');
+  const closedOut = need.status === 'done' || need.status === 'unmet';
+  const canResolve =
+    viewer.id === need.requesterId || viewer.id === need.postedById || viewer.isCoordinator;
+  const reasons = need.status === 'unmet' ? unmetReasons(data, need.id) : [];
   const verificationRows = tasks.flatMap((task) =>
     data.commitments
       .filter((commitment) => commitment.taskId === task.id && commitment.status !== 'declined')
@@ -91,6 +103,58 @@ export default async function ReportPage({ params }: { params: Promise<{ needId:
             ))}
           </div>
         )}
+      </Section>
+
+      <Section
+        title="Did it actually get solved?"
+        hint="Turnout and outcome are different facts. Only the requester can answer this one."
+      >
+        {need.resolution ? (
+          <Card>
+            <Tag tone={resolutionTone(need.resolution.resolution)}>
+              {RESOLUTION_LABEL[need.resolution.resolution]}
+            </Tag>
+            <p className="mt-2 text-xs text-stone-500">
+              Recorded {formatWhen(need.resolution.recordedAt)}
+              {!need.resolution.onBehalfOfRequester
+                ? ' by the requester'
+                : need.resolution.recordedBy === need.postedById
+                  ? ' by the neighbor who posts for the requester, from what the requester said'
+                  : ' by a coordinator, from what the requester said'}
+              .
+            </p>
+            {need.resolution.note && (need.publishConsent || canResolve) ? (
+              <p className="mt-2 border-l-2 border-stone-300 pl-3 text-sm">
+                {need.resolution.note}
+              </p>
+            ) : null}
+          </Card>
+        ) : !closedOut ? (
+          <p className="text-sm text-stone-500">
+            The work is still running. The outcome question comes after it closes out.
+          </p>
+        ) : canResolve ? (
+          <ResolutionForm needId={need.id} onBehalfOfRequester={viewer.id !== need.requesterId} />
+        ) : (
+          <p className="text-sm text-stone-500">
+            Waiting on the requester to say whether this actually solved their problem.
+          </p>
+        )}
+        {reasons.length > 0 ? (
+          <Card className="mt-3">
+            <div className="text-sm font-medium">The town did not field this</div>
+            <ul className="mt-2 space-y-1 text-sm text-stone-700">
+              {reasons.map((item) => (
+                <li key={item.title}>
+                  <strong>{item.title}</strong> — {item.reason}.
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-stone-500">
+              A capacity fact about Hamilton, not a mark against any neighbor.
+            </p>
+          </Card>
+        ) : null}
       </Section>
 
       <Section title="After-action report">

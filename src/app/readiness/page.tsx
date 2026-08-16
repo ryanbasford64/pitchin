@@ -50,6 +50,7 @@ export default function ReadinessPage() {
           <p className="mt-1 max-w-2xl text-sm text-stone-600">A plain-language readiness picture for this week: people, equipment, and the gaps that keep a job from launching.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link href="/reports" className="text-xs font-medium underline">The record</Link>
           <Link href="/print" className="text-xs font-medium underline">Weekly paper board</Link>
           <Link href="/surge" className="text-xs font-medium underline">Declare a surge</Link>
           <ResetDemo />
@@ -60,8 +61,21 @@ export default function ReadinessPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Ready this week" value={`${snapshot.membersReadyThisWeek} of ${snapshot.membersTotal}`} />
           <Stat label="Needs open" value={String(snapshot.needsOpen)} />
-          <Stat label="Needs met this month" value={String(snapshot.needsMetThisMonth)} />
+          <Stat label="Needs staffed this month" value={String(snapshot.needsMetThisMonth)} hint="tasks closed out" />
           <Stat label="Town show-rate" value={formatRate(snapshot.townShowRate)} />
+        </div>
+      </Section>
+
+      <Section
+        title="Staffed is not solved"
+        hint="Turnout is our number. Whether the problem went away is the requester's number."
+        action={<Link href="/reports" className="text-xs font-medium underline">Read the record</Link>}
+      >
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat label="Problems solved" value={String(snapshot.needsResolvedThisMonth)} hint="requester confirmed" />
+          <Stat label="Partly solved" value={String(snapshot.needsPartlyResolvedThisMonth)} hint="requester confirmed" />
+          <Stat label="Not fielded" value={String(snapshot.needsUnmetThisMonth)} hint="unmet this month" />
+          <Stat label="No answer yet" value={String(snapshot.needsAwaitingResolution)} hint="closed, outcome unknown" />
         </div>
       </Section>
 
