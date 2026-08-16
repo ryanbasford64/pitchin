@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --map-paper: #f4f1ea;
+  --map-line-strong: #d6d3d1;
+  --map-line-soft: #e7e5e4;
+  --map-shade: #d6d3d1;
+  --map-shade-thin: #fecdd3;
 }
 
 @theme inline {
@@ -14,8 +19,95 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* The surfaces are built from the stone scale plus white; inverting the
+       scale keeps every contrast pairing intact in dark mode. */
+    --color-white: #171412;
+    --color-stone-50: #0f0d0c;
+    --color-stone-100: #1c1917;
+    --color-stone-200: #292524;
+    --color-stone-300: #3f3a37;
+    --color-stone-400: #6b625d;
+    --color-stone-500: #a8a29e;
+    --color-stone-600: #c4bfba;
+    --color-stone-700: #d6d3d1;
+    --color-stone-800: #e7e5e4;
+    --color-stone-900: #f5f5f4;
+
+    --color-emerald-50: #052e21;
+    --color-emerald-100: #064e35;
+    --color-emerald-200: #10704f;
+    --color-emerald-600: #34d399;
+    --color-emerald-700: #6ee7b7;
+    --color-emerald-800: #a7f3d0;
+    --color-emerald-900: #d1fae5;
+
+    --color-rose-50: #3f0d18;
+    --color-rose-100: #5c1224;
+    --color-rose-300: #9f1239;
+    --color-rose-600: #fb7185;
+    --color-rose-700: #fda4af;
+    --color-rose-800: #fecdd3;
+
+    --color-amber-50: #3a2408;
+    --color-amber-100: #52320c;
+    --color-amber-200: #78450f;
+    --color-amber-700: #fbbf24;
+    --color-amber-800: #fcd34d;
+    --color-amber-900: #fde68a;
+
+    --map-paper: #14110f;
+    --map-line-strong: #46403b;
+    --map-line-soft: #332e2a;
+    --map-shade: #d6d3d1;
+    --map-shade-thin: #fb7185;
+  }
+}
+
+/* The weekly board is printed on paper, so it always uses the light palette. */
+@media print {
+  :root {
+    color-scheme: light;
+    --background: #ffffff;
+    --foreground: #171717;
+    --color-white: #ffffff;
+    --color-stone-50: #fafaf9;
+    --color-stone-100: #f5f5f4;
+    --color-stone-200: #e7e5e4;
+    --color-stone-300: #d6d3d1;
+    --color-stone-400: #a8a29e;
+    --color-stone-500: #78716c;
+    --color-stone-600: #57534e;
+    --color-stone-700: #44403c;
+    --color-stone-800: #292524;
+    --color-stone-900: #1c1917;
+    --color-emerald-50: #ecfdf5;
+    --color-emerald-100: #d1fae5;
+    --color-emerald-200: #a7f3d0;
+    --color-emerald-600: #059669;
+    --color-emerald-700: #047857;
+    --color-emerald-800: #065f46;
+    --color-emerald-900: #064e3b;
+    --color-rose-50: #fff1f2;
+    --color-rose-100: #ffe4e6;
+    --color-rose-300: #fda4af;
+    --color-rose-600: #e11d48;
+    --color-rose-700: #be123c;
+    --color-rose-800: #9f1239;
+    --color-amber-50: #fffbeb;
+    --color-amber-100: #fef3c7;
+    --color-amber-200: #fde68a;
+    --color-amber-700: #b45309;
+    --color-amber-800: #92400e;
+    --color-amber-900: #78350f;
+    --map-paper: #f4f1ea;
+    --map-line-strong: #d6d3d1;
+    --map-line-soft: #e7e5e4;
+    --map-shade: #d6d3d1;
+    --map-shade-thin: #fecdd3;
   }
 }
 

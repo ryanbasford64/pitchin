@@ -45,12 +45,13 @@ export default async function BoardPage() {
         title="Your pitch this week"
         hint="A compact view of the promise you already made."
       >
-        {pitchTask && pitchNeed ? (
+        {pitch && pitchTask && pitchNeed ? (
           <PitchCard
             data={data}
             memberId={memberId}
             need={pitchNeed}
             task={pitchTask}
+            status={pitch.status}
           />
         ) : (
           <p className="text-sm text-stone-600">

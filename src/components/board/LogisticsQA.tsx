@@ -80,14 +80,25 @@ function AnswerForm({
 }) {
   const router = useRouter();
   const [answer, setAnswer] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await fetch(`/api/needs/${needId}/questions`, {
+    setError(null);
+    const response = await fetch(`/api/needs/${needId}/questions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ questionId, answer }),
     });
+    const result: unknown = await response.json();
+    if (!response.ok) {
+      setError(
+        typeof result === 'object' && result !== null && 'error' in result && typeof result.error === 'string'
+          ? result.error
+          : 'That answer could not be saved.',
+      );
+      return;
+    }
     setAnswer('');
     router.refresh();
   }
@@ -103,6 +114,7 @@ function AnswerForm({
       <button className="rounded-md border border-stone-300 px-2 py-1.5 text-xs">
         Answer
       </button>
+      {error ? <span className="text-xs text-rose-700">{error}</span> : null}
     </form>
   );
 }

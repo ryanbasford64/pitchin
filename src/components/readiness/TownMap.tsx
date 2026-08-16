@@ -69,11 +69,11 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-[#f4f1ea]">
+      <div className="overflow-hidden rounded-lg border border-stone-200 bg-[var(--map-paper)]">
         <svg viewBox="0 0 800 500" role="img" aria-label="Map of open neighborhood needs" className="block h-auto w-full">
-          <rect width="800" height="500" fill="#f4f1ea" />
-          <path d="M0 150 C170 115 275 175 420 145 S650 120 800 150" fill="none" stroke="#d6d3d1" strokeWidth="2" />
-          <path d="M0 375 C180 345 300 405 470 360 S650 350 800 380" fill="none" stroke="#e7e5e4" strokeWidth="2" />
+          <rect width="800" height="500" fill="var(--map-paper)" />
+          <path d="M0 150 C170 115 275 175 420 145 S650 120 800 150" fill="none" stroke="var(--map-line-strong)" strokeWidth="2" />
+          <path d="M0 375 C180 345 300 405 470 360 S650 350 800 380" fill="none" stroke="var(--map-line-soft)" strokeWidth="2" />
           {neighborhoodSupply.map((area) => {
             return (
               <ellipse
@@ -82,7 +82,7 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
                 cy={area.y}
                 rx="92"
                 ry="58"
-                fill={area.activeMemberCount < 2 ? '#fecdd3' : '#d6d3d1'}
+                fill={area.activeMemberCount < 2 ? 'var(--map-shade-thin)' : 'var(--map-shade)'}
                 opacity="0.22"
               />
             );
@@ -117,7 +117,7 @@ export function TownMap({ needs, supply }: { needs: TownMapNeed[]; supply: TownM
                 r={radius}
                 fill={urgencyColors[need.urgency]}
                 fillOpacity="0.9"
-                stroke="#fff"
+                stroke="var(--map-paper)"
                 strokeWidth="2"
                 className="cursor-pointer"
                 onClick={() => setSelectedId(need.id)}
