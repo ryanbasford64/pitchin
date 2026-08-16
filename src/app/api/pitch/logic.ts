@@ -7,6 +7,7 @@ import {
   task,
   tasksForNeed,
 } from '@/lib/derive';
+import { sweepUnmetNeeds } from '@/lib/sweep';
 import type { Commitment, Crew, Database, Task } from '@/lib/types';
 
 const WEEK_MS = 7 * 864e5;
@@ -180,6 +181,8 @@ export function resolveWeek(data: Database): WeekSummary {
       currentNeed.status = 'done';
     }
   }
+
+  sweepUnmetNeeds(data);
 
   const crews = data.crews.map((crew) => {
     const outcome = crewWeekOutcome(data, crew);

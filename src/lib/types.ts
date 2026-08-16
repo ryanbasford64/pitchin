@@ -76,6 +76,19 @@ export interface Crew {
 }
 
 export type NeedVisibility = 'neighborhood' | 'crews_only' | 'private';
+
+/** What the requester says about the outcome, which is not the same as turnout. */
+export type NeedResolution = 'solved' | 'partly' | 'not_solved';
+
+export interface ResolutionRecord {
+  resolution: NeedResolution;
+  note: string | null;
+  /** The requester, or a coordinator writing down what the requester said. */
+  recordedBy: Uuid;
+  onBehalfOfRequester: boolean;
+  recordedAt: string;
+}
+
 export type NeedStatus = 'draft' | 'open' | 'staffed' | 'done' | 'unmet' | 'cancelled';
 export type NeedUrgency = 'routine' | 'soon' | 'urgent' | 'surge';
 
@@ -116,6 +129,8 @@ export interface Need {
   /** Requester consent to name them in the public after-action report. */
   publishConsent: boolean;
   questions?: LogisticsQuestion[];
+  /** Answered by the requester after the work, never inferred from attendance. */
+  resolution?: ResolutionRecord | null;
 }
 
 export interface LogisticsQuestion {
@@ -196,7 +211,13 @@ export interface ReadinessSnapshot {
   qualCounts: Record<string, number>;
   /** Capabilities and quals the town cannot field right now. */
   gaps: string[];
+  /** Needs whose tasks were staffed and closed. Staffing is not the same as solving. */
   needsMetThisMonth: number;
+  needsResolvedThisMonth: number;
+  needsPartlyResolvedThisMonth: number;
+  needsUnmetThisMonth: number;
+  /** Closed needs whose requester has not yet said whether it worked. */
+  needsAwaitingResolution: number;
   needsOpen: number;
   townShowRate: number | null;
 }
