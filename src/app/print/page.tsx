@@ -2,6 +2,8 @@ import { formatRate, formatWhen, label, readiness, showRate, tasksForNeed } from
 import { dbFresh } from '@/lib/store';
 import { PrintButton } from '@/components/readiness/PrintButton';
 
+export const dynamic = 'force-dynamic';
+
 export default function PrintPage() {
   const data = dbFresh();
   const needs = data.needs.filter((need) => (need.status === 'open' || need.status === 'staffed') && need.visibility === 'neighborhood');
@@ -25,7 +27,8 @@ export default function PrintPage() {
           header, body > footer, .print-hide { display: none !important; }
           main { max-width: none !important; padding: 0 !important; }
           .print-board { max-width: none; }
-          .print-card { border: 1px solid #111 !important; box-shadow: none !important; break-inside: avoid; }
+          .print-needs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.65rem !important; }
+          .print-card { border: 1px solid #111 !important; box-shadow: none !important; break-inside: avoid; padding: 0.65rem !important; }
           a { color: black !important; text-decoration: none !important; }
           h1, h2, h3, p, div, span { color: black !important; }
         }
@@ -41,7 +44,7 @@ export default function PrintPage() {
 
         <section className="mb-8">
           <h2 className="mb-3 text-xl font-bold">Open needs</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="print-needs-grid grid gap-4 md:grid-cols-2">
             {needs.map((need) => {
               const tasks = tasksForNeed(data, need.id);
               const requester = data.members.find((member) => member.id === need.requesterId);

@@ -6,6 +6,8 @@ import { Card, Empty, Section, Stat, Tag } from '@/components/ui';
 import { ResetDemo } from '@/components/readiness/ResetDemo';
 import { TownMap } from '@/components/readiness/TownMap';
 
+export const dynamic = 'force-dynamic';
+
 const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
 function inventory(counts: Record<string, number>) {

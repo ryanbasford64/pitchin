@@ -5,6 +5,8 @@ import type { Capability } from '@/lib/types';
 import { Card, Section, Tag } from '@/components/ui';
 import { DeclareSurgeForm, StandDownButton, SurgeResponseButtons } from '@/components/readiness/SurgeControls';
 
+export const dynamic = 'force-dynamic';
+
 const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
 export default async function SurgePage() {
