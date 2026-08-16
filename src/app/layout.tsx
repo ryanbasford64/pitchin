@@ -3,7 +3,7 @@ import './globals.css';
 import { Nav } from '@/components/Nav';
 
 export const metadata: Metadata = {
-  title: 'PitchIn — people helping people',
+  title: 'PitchIn',
   description:
     'A neighborhood readiness board: needs decomposed into tasks, matched to what neighbors actually have, and closed with an after-action report.',
 };
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main className="mx-auto w-full max-w-5xl px-5 py-8">{children}</main>
         <footer className="mx-auto w-full max-w-5xl px-5 py-10 text-xs text-stone-500">
-          PitchIn — people helping people. The woodpile was the drill.
+          PitchIn — the woodpile was the drill.
         </footer>
       </body>
     </html>
