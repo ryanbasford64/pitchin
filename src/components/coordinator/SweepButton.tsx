@@ -11,11 +11,16 @@ export function SweepButton({ count }: { count: number }) {
   async function sweep() {
     setBusy(true);
     setError('');
-    const response = await fetch('/api/coordinator/sweep', { method: 'POST' });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) setError(result.error ?? 'Something went wrong.');
-    else router.refresh();
-    setBusy(false);
+    try {
+      const response = await fetch('/api/coordinator/sweep', { method: 'POST' });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) setError(result.error ?? 'The sweep could not be completed.');
+      else router.refresh();
+    } catch {
+      setError('The sweep could not be completed.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

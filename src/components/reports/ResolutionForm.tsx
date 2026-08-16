@@ -27,15 +27,20 @@ export function ResolutionForm({
     if (!choice) return;
     setBusy(true);
     setError('');
-    const response = await fetch(`/api/needs/${needId}/resolve`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ resolution: choice, note }),
-    });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) setError(result.error ?? 'Something went wrong.');
-    else router.refresh();
-    setBusy(false);
+    try {
+      const response = await fetch(`/api/needs/${needId}/resolve`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ resolution: choice, note }),
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) setError(result.error ?? 'That outcome could not be recorded.');
+      else router.refresh();
+    } catch {
+      setError('That outcome could not be recorded.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
