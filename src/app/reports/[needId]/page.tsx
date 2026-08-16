@@ -121,7 +121,7 @@ export default async function ReportPage({ params }: { params: Promise<{ needId:
                 : ' by the requester'}
               .
             </p>
-            {need.resolution.note ? (
+            {need.resolution.note && (need.publishConsent || canResolve) ? (
               <p className="mt-2 border-l-2 border-stone-300 pl-3 text-sm">
                 {need.resolution.note}
               </p>

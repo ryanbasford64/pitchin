@@ -108,7 +108,7 @@ export default function LedgerPage() {
                   {need.neighborhood} · {turnout(data, need)} neighbors ·{' '}
                   {personMinutes(data, need.id)} person-minutes
                 </div>
-                {need.resolution?.note ? (
+                {need.publishConsent && need.resolution?.note ? (
                   <p className="mt-2 border-l-2 border-stone-300 pl-3 text-sm">
                     {need.resolution.note}
                   </p>

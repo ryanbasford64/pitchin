@@ -1,11 +1,12 @@
 // The unmet sweep. Without it, a need nobody claimed sits "open" forever and the town
 // never has to look at what it failed to field.
 import { atQuorum, tasksForNeed } from './derive';
-import type { Database, Need } from './types';
+import type { Database, Need, Task } from './types';
 
 /**
- * Close out needs whose deadline has passed with no task at quorum. A need with even one
- * staffed task is left alone — somebody is still working it.
+ * Close out needs whose deadline has passed with no task still being worked. A task counts as
+ * live work only while it is done, staffed, or open with claims at quorum — a task that already
+ * resolved unmet because nobody showed is a miss, not somebody still working it.
  */
 export function sweepUnmetNeeds(data: Database, now = Date.now()): Need[] {
   const swept: Need[] = [];
@@ -14,7 +15,9 @@ export function sweepUnmetNeeds(data: Database, now = Date.now()): Need[] {
     if (!item.neededBy || new Date(item.neededBy).getTime() > now) continue;
     const tasks = tasksForNeed(data, item.id);
     if (tasks.length === 0) continue;
-    if (tasks.some((t) => t.status === 'done' || t.status === 'staffed' || atQuorum(t))) continue;
+    const live = (t: Task) =>
+      t.status === 'done' || t.status === 'staffed' || (t.status === 'open' && atQuorum(t));
+    if (tasks.some(live)) continue;
     for (const t of tasks) {
       if (t.status === 'open') t.status = 'unmet';
     }

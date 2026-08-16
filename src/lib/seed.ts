@@ -199,6 +199,25 @@ export function seedDatabase(): Database {
       publishConsent: true,
     },
     {
+      id: 'need_crew_move',
+      title: 'Move a hospital bed upstairs before discharge',
+      rawText:
+        "Mom comes home Friday and the bed has to go up to the second floor. I'd rather keep this inside the crew.",
+      requesterId: 'mem_curtis',
+      postedById: null,
+      neighborhood: 'Hamilton Central',
+      street: '318 N 5th St',
+      lat: 46.2571,
+      lng: -114.1602,
+      visibility: 'crews_only',
+      urgency: 'urgent',
+      status: 'unmet',
+      createdAt: at(lastWeek, 1, 9),
+      neededBy: at(lastWeek, 3, 17),
+      taskIds: ['task_crew_move'],
+      publishConsent: false,
+    },
+    {
       id: 'need_private_rent',
       title: 'Help sorting a stack of bills and a rent letter',
       rawText:
@@ -230,6 +249,7 @@ export function seedDatabase(): Database {
     t('task_pump_out', 'need_pump', 'Pump out and squeegee the basement', 120, 2, ['pump', 'generator'], ['pump_operator'], ['trash pump', 'hose'], at(lastWeek, 2, 8), ['mem_junie', 'mem_marcus'], 'done'),
     t('task_snow_clear', 'need_snow', 'Clear and sand the driveway', 40, 1, ['snowblower'], [], ['sand'], at(lastWeek, 1, 9), [], 'unmet'),
     t('task_hay_haul', 'need_hay', 'Haul two round bales out to the back pasture', 60, 2, ['truck', 'trailer'], [], ['round bales'], at(lastWeek, 4, 9), ['mem_ellis']),
+    t('task_crew_move', 'need_crew_move', 'Carry the bed frame and mattress upstairs', 60, 3, ['heavy_lifting'], [], [], at(lastWeek, 3, 16), ['mem_marcus'], 'unmet'),
     t('task_bills', 'need_private_rent', 'Sit down with the mail and make a list', 45, 1, ['clerical'], [], [], at(weekOf, 6, 14), []),
   ];
 
