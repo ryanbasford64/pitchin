@@ -1,4 +1,4 @@
-# PitchIn — people helping people
+# PitchIn
 
 A neighborhood readiness board. Needs arrive in plain English, get decomposed into taskable
 units, get matched to what neighbors actually have, and get closed with an after-action report.

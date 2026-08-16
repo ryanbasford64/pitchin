@@ -92,7 +92,7 @@ export default function PrintPage() {
             })}
           </div>
         </section>
-        <p className="mt-10 border-t border-stone-300 pt-3 text-sm">PitchIn — people helping people</p>
+        <p className="mt-10 border-t border-stone-300 pt-3 text-sm">PitchIn</p>
       </div>
     </>
   );
