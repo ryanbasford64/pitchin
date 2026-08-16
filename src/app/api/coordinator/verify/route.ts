@@ -32,7 +32,8 @@ export async function POST(request: Request) {
         else member.noShows++;
       }
       const taskCommitments = data.commitments.filter((item) => item.taskId === task.id && item.status !== 'declined');
-      if (taskCommitments.length > 0 && taskCommitments.every((item) => item.status === 'kept' || item.status === 'no_show')) {
+      const past = new Date(task.scheduledFor).getTime() <= Date.now();
+      if (past && taskCommitments.length > 0 && taskCommitments.every((item) => item.status === 'kept' || item.status === 'no_show')) {
         const kept = taskCommitments.filter((item) => item.status === 'kept').length;
         task.status = kept >= task.quorum ? 'done' : 'unmet';
       }
