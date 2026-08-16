@@ -32,9 +32,14 @@ export async function POST(request: Request) {
         else member.noShows++;
       }
       const taskCommitments = data.commitments.filter((item) => item.taskId === task.id && item.status !== 'declined');
-      if (taskCommitments.length > 0 && taskCommitments.every((item) => item.status === 'kept' || item.status === 'no_show')) task.status = 'done';
+      const past = new Date(task.scheduledFor).getTime() <= Date.now();
+      if (past && taskCommitments.length > 0 && taskCommitments.every((item) => item.status === 'kept' || item.status === 'no_show')) {
+        const kept = taskCommitments.filter((item) => item.status === 'kept').length;
+        task.status = kept >= task.quorum ? 'done' : 'unmet';
+      }
       const needTasks = data.tasks.filter((item) => item.needId === need.id);
-      if (needTasks.length > 0 && needTasks.every((item) => item.status === 'done')) need.status = 'staffed';
+      const resolved = needTasks.length > 0 && needTasks.every((item) => item.status === 'done' || item.status === 'unmet');
+      if (resolved) need.status = needTasks.every((item) => item.status === 'done') ? 'done' : 'unmet';
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { ALL_QUALS, formatRate, label, showRate } from '@/lib/derive';
 import { dbFresh } from '@/lib/store';
+import { currentMember } from '@/lib/session';
 import type { Capability } from '@/lib/types';
 import { Card, Section, Tag } from '@/components/ui';
 import { DeclareSurgeForm, StandDownButton, SurgeResponseButtons } from '@/components/readiness/SurgeControls';
@@ -8,8 +9,9 @@ export const dynamic = 'force-dynamic';
 
 const HARD_CAPABILITIES = ['truck', 'trailer', 'generator', 'pump', 'chainsaw', 'ladder', 'snowblower'] satisfies readonly Capability[];
 
-export default function SurgePage() {
+export default async function SurgePage() {
   const data = dbFresh();
+  const viewer = await currentMember();
   const active = data.surges.find((surge) => surge.standDownAt === null);
   const past = data.surges.filter((surge) => surge.standDownAt !== null).slice().reverse().slice(0, 5);
   const rows = active
@@ -43,7 +45,11 @@ export default function SurgePage() {
 
       {!active ? (
         <Section title="Declare a surge" hint="Choose the qualifications that the situation actually requires.">
-          <DeclareSurgeForm quals={ALL_QUALS} />
+          {viewer.isCoordinator ? (
+            <DeclareSurgeForm quals={ALL_QUALS} />
+          ) : (
+            <p className="text-sm text-stone-600">A coordinator declares the surge; you will be asked by roll call if your quals match.</p>
+          )}
         </Section>
       ) : (
         <Section title={active.name} hint={`Declared ${new Date(active.declaredAt).toLocaleString('en-US', { timeZone: 'UTC' })}`}>
@@ -60,7 +66,7 @@ export default function SurgePage() {
           </div>
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">Roll call</h2>
-            <StandDownButton surgeId={active.id} />
+            {viewer.isCoordinator ? <StandDownButton surgeId={active.id} /> : null}
           </div>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[680px] text-left text-sm">
@@ -68,7 +74,7 @@ export default function SurgePage() {
               <tbody>
                 {rows.map((row) => {
                   const crew = data.crews.find((item) => item.id === row.member.crewId);
-                  return <tr key={row.memberId} className="border-b border-stone-100"><td className="px-2 py-2 font-medium">{row.member.name}</td><td className="px-2 py-2">{crew?.name ?? '—'}</td><td className="px-2 py-2">{formatRate(row.showRate.rate)}</td><td className="px-2 py-2">{row.matchingQuals.map(label).join(', ')}</td><td className="px-2 py-2">{row.member.capabilities.map(label).join(', ') || 'none'}</td><td className="px-2 py-2"><SurgeResponseButtons surgeId={active.id} memberId={row.memberId} response={row.response} /></td></tr>;
+                  return <tr key={row.memberId} className="border-b border-stone-100"><td className="px-2 py-2 font-medium">{row.member.name}</td><td className="px-2 py-2">{crew?.name ?? '—'}</td><td className="px-2 py-2">{formatRate(row.showRate.rate)}</td><td className="px-2 py-2">{row.matchingQuals.map(label).join(', ')}</td><td className="px-2 py-2">{row.member.capabilities.map(label).join(', ') || 'none'}</td><td className="px-2 py-2">{viewer.isCoordinator || row.memberId === viewer.id ? <SurgeResponseButtons surgeId={active.id} memberId={row.memberId} response={row.response} /> : <Tag tone="neutral">{row.response}</Tag>}</td></tr>;
                 })}
               </tbody>
             </table>
