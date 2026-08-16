@@ -21,6 +21,7 @@ export async function POST(
     if (body.questionId) {
       const item = need.questions?.find((question) => question.id === body.questionId);
       if (!item || !body.answer?.trim()) return { error: 'unknown question or empty answer', status: 400 as const };
+      if (item.answer) return { error: 'That question already has an answer.', status: 409 as const };
       item.answer = body.answer.trim();
       item.answeredBy = memberId;
       item.answeredAt = new Date().toISOString();

@@ -1,17 +1,19 @@
 import { Card, Tag } from '@/components/ui';
 import { formatWhen, member } from '@/lib/derive';
-import type { Database, Need, Task } from '@/lib/types';
+import type { Commitment, Database, Need, Task } from '@/lib/types';
 
 export function PitchCard({
   data,
   memberId,
   need,
   task,
+  status,
 }: {
   data: Database;
   memberId: string;
   need: Need;
   task: Task;
+  status: Commitment['status'];
 }) {
   const partners = task.claimedBy
     .filter((id) => id !== memberId)
@@ -34,7 +36,13 @@ export function PitchCard({
             Bring: {task.materiel.length ? task.materiel.join(', ') : 'nothing to bring'}.
           </p>
         </div>
-        <Tag tone="good">committed</Tag>
+        {status === 'kept' ? (
+          <Tag tone="good">kept</Tag>
+        ) : status === 'no_show' ? (
+          <Tag tone="alert">no-show</Tag>
+        ) : (
+          <Tag>committed</Tag>
+        )}
       </div>
     </Card>
   );

@@ -79,21 +79,26 @@ export function SurgeResponseButtons({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   async function respond(next: 'yes' | 'no') {
     setBusy(true);
+    setFailure(null);
     try {
       await postSurge({ action: 'respond', surgeId, memberId, response: next });
       router.refresh();
+    } catch (caught) {
+      setFailure(caught instanceof Error ? caught.message : 'That answer could not be recorded.');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <span className="flex gap-1">
+    <span className="flex flex-wrap items-center gap-1">
       <button type="button" disabled={busy} onClick={() => respond('yes')} className={`rounded border px-2 py-1 text-xs ${response === 'yes' ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-stone-300'}`}>Yes</button>
       <button type="button" disabled={busy} onClick={() => respond('no')} className={`rounded border px-2 py-1 text-xs ${response === 'no' ? 'border-rose-600 bg-rose-50 text-rose-800' : 'border-stone-300'}`}>No</button>
+      {failure ? <span className="text-xs text-rose-700">{failure}</span> : null}
     </span>
   );
 }
@@ -101,18 +106,25 @@ export function SurgeResponseButtons({
 export function StandDownButton({ surgeId }: { surgeId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   async function standDown() {
     setBusy(true);
+    setFailure(null);
     try {
       await postSurge({ action: 'stand_down', surgeId });
       router.refresh();
+    } catch (caught) {
+      setFailure(caught instanceof Error ? caught.message : 'The surge could not be stood down.');
     } finally {
       setBusy(false);
     }
   }
   return (
-    <button type="button" onClick={standDown} disabled={busy} className="rounded border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-800 hover:bg-rose-50 disabled:opacity-50">
-      {busy ? 'Standing down…' : 'Stand down surge'}
-    </button>
+    <span className="flex flex-wrap items-center gap-2">
+      <button type="button" onClick={standDown} disabled={busy} className="rounded border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-800 hover:bg-rose-50 disabled:opacity-50">
+        {busy ? 'Standing down…' : 'Stand down surge'}
+      </button>
+      {failure ? <span className="text-xs text-rose-700">{failure}</span> : null}
+    </span>
   );
 }

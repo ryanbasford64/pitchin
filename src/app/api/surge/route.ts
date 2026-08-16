@@ -1,4 +1,4 @@
-import { currentMemberId } from '@/lib/session';
+import { currentMember } from '@/lib/session';
 import { ALL_QUALS } from '@/lib/derive';
 import { db, id, write } from '@/lib/store';
 import type { Qual, Surge } from '@/lib/types';
@@ -28,8 +28,10 @@ export async function POST(request: Request) {
   }
   if (!isRecord(body) || typeof body.action !== 'string') return error('A valid surge action is required.');
 
-  const memberId = await currentMemberId();
+  const viewer = await currentMember();
+  const memberId = viewer.id;
   if (body.action === 'declare') {
+    if (!viewer.isCoordinator) return error('Only a coordinator can declare a surge.', 403);
     if (typeof body.name !== 'string' || !body.name.trim()) return error('A surge name is required.');
     if (!Array.isArray(body.quals) || body.quals.length === 0 || !body.quals.every(isQual)) {
       return error('Choose at least one valid required qual.');
@@ -61,16 +63,17 @@ export async function POST(request: Request) {
     if (typeof body.surgeId !== 'string' || !isResponse(body.response)) {
       return error('A surge and a yes/no response are required.');
     }
-    if (typeof body.memberId === 'string' && body.memberId !== memberId) {
+    if (typeof body.memberId === 'string' && body.memberId !== memberId && !viewer.isCoordinator) {
       return error('You can only answer a roll call for yourself.', 403);
     }
     const surgeId = body.surgeId;
     const response = body.response;
+    const answerFor = typeof body.memberId === 'string' ? body.memberId : memberId;
     const surge = write((data) => {
       const found = data.surges.find((item) => item.id === surgeId);
       if (!found) return undefined;
       if (found.standDownAt !== null) return null;
-      const row = found.rollCall.find((item) => item.memberId === memberId);
+      const row = found.rollCall.find((item) => item.memberId === answerFor);
       if (!row) return null;
       row.response = response;
       row.respondedAt = new Date().toISOString();
@@ -81,6 +84,7 @@ export async function POST(request: Request) {
   }
 
   if (body.action === 'stand_down') {
+    if (!viewer.isCoordinator) return error('Only a coordinator can stand down a surge.', 403);
     if (typeof body.surgeId !== 'string') return error('A surge id is required.');
     const surge = write((data) => {
       const found = data.surges.find((item) => item.id === body.surgeId);
