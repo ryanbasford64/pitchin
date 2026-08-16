@@ -116,9 +116,11 @@ export default async function ReportPage({ params }: { params: Promise<{ needId:
             </Tag>
             <p className="mt-2 text-xs text-stone-500">
               Recorded {formatWhen(need.resolution.recordedAt)}
-              {need.resolution.onBehalfOfRequester
-                ? ' by a coordinator, from what the requester said'
-                : ' by the requester'}
+              {!need.resolution.onBehalfOfRequester
+                ? ' by the requester'
+                : need.resolution.recordedBy === need.postedById
+                  ? ' by the neighbor who posts for the requester, from what the requester said'
+                  : ' by a coordinator, from what the requester said'}
               .
             </p>
             {need.resolution.note && (need.publishConsent || canResolve) ? (
