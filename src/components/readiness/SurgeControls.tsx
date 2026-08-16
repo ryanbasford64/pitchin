@@ -29,10 +29,11 @@ export function DeclareSurgeForm({ quals }: { quals: Qual[] }) {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await postSurge({ action: 'declare', name: form.get('name'), quals: form.getAll('quals') });
-      event.currentTarget.reset();
+      formElement.reset();
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'The surge action could not be completed.');

@@ -223,11 +223,9 @@ export default async function CoordinatorPage() {
 function intakeQueue(data: Database): Need[] {
   return data.needs.filter((need, index, all) =>
     all.findIndex((item) => item.id === need.id) === index &&
-    (need.status === 'draft' ||
-      need.taskIds.length === 0 ||
-      ((need.visibility === 'private' || need.visibility === 'crews_only') &&
-        need.status !== 'done' &&
-        need.status !== 'cancelled')),
+    need.status !== 'done' &&
+    need.status !== 'cancelled' &&
+    (need.status === 'draft' || need.taskIds.length === 0),
   );
 }
 

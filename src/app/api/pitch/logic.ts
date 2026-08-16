@@ -149,6 +149,7 @@ export function resolveWeek(data: Database): WeekSummary {
     if (!candidate) continue;
     const scheduled = new Date(candidate.scheduledFor).getTime();
     if (scheduled < weekStart || scheduled >= weekEnd) continue;
+    if (scheduled > Date.now() && commitment.verifiedBy === null) continue;
 
     const current = member(data, commitment.memberId);
     if (!current) continue;
@@ -166,6 +167,7 @@ export function resolveWeek(data: Database): WeekSummary {
   for (const candidate of data.tasks) {
     const scheduled = new Date(candidate.scheduledFor).getTime();
     if (scheduled < weekStart || scheduled >= weekEnd) continue;
+    if (scheduled > Date.now()) continue;
     const keptCommitments = data.commitments.filter(
       (commitment) => commitment.taskId === candidate.id && commitment.status === 'kept',
     ).length;

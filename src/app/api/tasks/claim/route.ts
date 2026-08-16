@@ -13,6 +13,9 @@ export async function POST(request: Request) {
     const member = data.members.find((item) => item.id === memberId);
     if (!need || !member) return { error: 'unknown task', status: 400 as const };
     if (need.visibility === 'private') return { error: 'private needs cannot be claimed here', status: 409 as const };
+    if (need.visibility === 'crews_only' && member.crewId === null) {
+      return { error: 'this ask is held for crews', status: 403 as const };
+    }
     if (need.status !== 'open' && need.status !== 'staffed') return { error: 'this need is not open', status: 409 as const };
     if (task.claimedBy.includes(memberId)) return { error: 'you already have this one', status: 409 as const };
     if (task.claimedBy.length >= task.quorum) return { error: 'already staffed', status: 409 as const };

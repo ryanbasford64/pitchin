@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { currentMember } from '@/lib/session';
 import { formatWhen, memberName, tasksForNeed } from '@/lib/derive';
 import { Card, Empty, Section, Tag } from '@/components/ui';
@@ -14,6 +15,16 @@ export default async function ReportPage({ params }: { params: Promise<{ needId:
   if (!need) return <Empty>That need is not in the record.</Empty>;
 
   const tasks = tasksForNeed(data, need.id);
+  const claimant = tasks.some((task) => task.claimedBy.includes(viewer.id));
+  const authorized =
+    need.visibility === 'neighborhood' ||
+    viewer.id === need.requesterId ||
+    viewer.id === need.postedById ||
+    viewer.isCoordinator ||
+    (need.visibility === 'crews_only' ? viewer.crewId !== null : claimant);
+
+  if (!authorized) notFound();
+
   const report = data.reports.find((item) => item.needId === need.id);
   const canVerify = viewer.id === need.requesterId || viewer.isCoordinator;
   const allDone = tasks.length > 0 && tasks.every((task) => task.status === 'done');

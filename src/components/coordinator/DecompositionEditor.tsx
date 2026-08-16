@@ -44,7 +44,7 @@ export function DecompositionEditor({ need, initial }: { need: Need; initial: Ta
               <input className="rounded border border-stone-300 bg-white px-2 py-1 text-sm" value={draft.title} onChange={(e) => update(index, { title: e.target.value })} />
               <input aria-label="minutes" className="rounded border border-stone-300 bg-white px-2 py-1 text-sm" type="number" min="1" value={draft.minutes} onChange={(e) => update(index, { minutes: Number(e.target.value) })} />
               <input aria-label="quorum" className="rounded border border-stone-300 bg-white px-2 py-1 text-sm" type="number" min="1" value={draft.quorum} onChange={(e) => update(index, { quorum: Number(e.target.value) })} />
-              <input aria-label="scheduled time" className="rounded border border-stone-300 bg-white px-2 py-1 text-sm" type="datetime-local" value={draft.scheduledFor.slice(0, 16)} onChange={(e) => update(index, { scheduledFor: new Date(e.target.value).toISOString() })} />
+              <input aria-label="scheduled time" className="rounded border border-stone-300 bg-white px-2 py-1 text-sm" type="datetime-local" value={draft.scheduledFor.slice(0, 16)} onChange={(e) => e.target.value && update(index, { scheduledFor: `${e.target.value}:00.000Z` })} />
               <button className="text-xs text-rose-700" onClick={() => setDrafts((items) => items.filter((_, i) => i !== index))}>remove</button>
             </div>
             <input className="mt-2 w-full rounded border border-stone-300 bg-white px-2 py-1 text-xs" placeholder="Materiel, comma separated" value={draft.materiel.join(', ')} onChange={(e) => update(index, { materiel: e.target.value.split(',').map((v) => v.trim()).filter(Boolean) })} />

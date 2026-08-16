@@ -11,12 +11,12 @@ import {
   weeklyPitch,
 } from '@/lib/derive';
 import { currentMember } from '@/lib/session';
-import { db } from '@/lib/store';
+import { dbFresh } from '@/lib/store';
 import { declinedThisWeek, partnersFor, pitchCandidate, startsInFuture } from '@/app/api/pitch/logic';
 import { CancelPitchButton, PauseToggle, PitchOfferActions } from '@/components/pitch/PitchActions';
 
 export default async function PitchPage() {
-  const data = db();
+  const data = dbFresh();
   const current = await currentMember();
   const held = weeklyPitch(data, current.id);
   const candidate = current.paused ? null : pitchCandidate(data, current.id);

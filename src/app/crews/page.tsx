@@ -1,11 +1,11 @@
 import { crewOf, label, member, weeklyPitch } from '@/lib/derive';
 import { currentMemberId } from '@/lib/session';
-import { db } from '@/lib/store';
+import { dbFresh } from '@/lib/store';
 import { Card, Section, Tag } from '@/components/ui';
 import { AdvanceWeekButton } from '@/components/pitch/PitchActions';
 
 export default async function CrewsPage() {
-  const data = db();
+  const data = dbFresh();
   const currentMemberIdValue = await currentMemberId();
 
   return (

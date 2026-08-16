@@ -27,7 +27,11 @@ export default async function NeedPage({
   const claimant = tasks.some((item) => item.claimedBy.includes(memberId));
   const requester = need.requesterId === memberId;
 
+  const viewer = member(data, memberId);
+  const inACrew = viewer?.crewId != null;
+
   if (need.visibility === 'private' && !claimant && !requester) notFound();
+  if (need.visibility === 'crews_only' && !inACrew && !requester) notFound();
 
   const exactAddress = claimant || requester;
   const requesterName = need.publishConsent

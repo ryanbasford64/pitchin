@@ -1,7 +1,19 @@
 import { NextResponse } from 'next/server';
 import { currentMemberId } from '@/lib/session';
 import { dbFresh, id, write } from '@/lib/store';
-import type { NeedUrgency, NeedVisibility } from '@/lib/types';
+import type { Database, NeedUrgency, NeedVisibility } from '@/lib/types';
+
+const TOWN_CENTER = { lat: 46.2469, lng: -114.1591 };
+
+/** Places a new ask near its neighborhood's existing needs so it plots on the town map. */
+function townPoint(data: Database, neighborhood: string): { lat: number; lng: number } {
+  const nearby = data.needs.filter((item) => item.neighborhood === neighborhood && item.lat !== 0);
+  if (nearby.length === 0) return TOWN_CENTER;
+  return {
+    lat: nearby.reduce((sum, item) => sum + item.lat, 0) / nearby.length,
+    lng: nearby.reduce((sum, item) => sum + item.lng, 0) / nearby.length,
+  };
+}
 
 export async function POST(request: Request) {
   const body = (await request.json()) as {
@@ -36,8 +48,7 @@ export async function POST(request: Request) {
       postedById: body.onBehalfOfId ? memberId : null,
       neighborhood: requester.neighborhood || current.neighborhood,
       street: requester.street || current.street,
-      lat: 0,
-      lng: 0,
+      ...townPoint(data, requester.neighborhood || current.neighborhood),
       visibility: body.visibility ?? 'neighborhood',
       urgency: body.urgency ?? 'routine',
       status: 'draft' as const,

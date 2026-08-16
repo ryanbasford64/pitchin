@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { currentMember } from '@/lib/session';
 import { id, write } from '@/lib/store';
 import { ALL_CAPABILITIES, ALL_QUALS } from '@/lib/derive';
 import type { Capability, Qual } from '@/lib/types';
@@ -19,6 +20,10 @@ function validDraft(value: unknown): value is TaskDraft {
 }
 
 export async function POST(request: Request) {
+  const viewer = await currentMember();
+  if (!viewer.isCoordinator) {
+    return NextResponse.json({ error: 'only a coordinator can approve tasks' }, { status: 403 });
+  }
   const body = await request.json() as { needId?: unknown; tasks?: unknown };
   if (typeof body.needId !== 'string' || !Array.isArray(body.tasks) || body.tasks.length === 0 || !body.tasks.every(validDraft)) {
     return NextResponse.json({ error: 'invalid need or task drafts' }, { status: 400 });

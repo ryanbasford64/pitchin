@@ -58,8 +58,11 @@ export async function POST(request: Request) {
   }
 
   if (body.action === 'respond') {
-    if (typeof body.surgeId !== 'string' || typeof body.memberId !== 'string' || !isResponse(body.response)) {
-      return error('A surge, member, and yes/no response are required.');
+    if (typeof body.surgeId !== 'string' || !isResponse(body.response)) {
+      return error('A surge and a yes/no response are required.');
+    }
+    if (typeof body.memberId === 'string' && body.memberId !== memberId) {
+      return error('You can only answer a roll call for yourself.', 403);
     }
     const surgeId = body.surgeId;
     const response = body.response;
@@ -67,7 +70,7 @@ export async function POST(request: Request) {
       const found = data.surges.find((item) => item.id === surgeId);
       if (!found) return undefined;
       if (found.standDownAt !== null) return null;
-      const row = found.rollCall.find((item) => item.memberId === body.memberId);
+      const row = found.rollCall.find((item) => item.memberId === memberId);
       if (!row) return null;
       row.response = response;
       row.respondedAt = new Date().toISOString();
